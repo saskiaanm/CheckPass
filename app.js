@@ -248,7 +248,7 @@ function updateAIAnalysis(pwd, result, score) {
     </div>
 
     <div class="ai-section">
-      <div class="ai-section-title">🔬 Complexity Breakdown</div>
+      <div class="ai-section-title"> Complexity Breakdown</div>
       <p>
         <strong>Entropy:</strong> <span style="color:${entropyRating.color}">${entropy.toFixed(1)} bits (${entropyRating.text})</span>
         &nbsp;|&nbsp;
@@ -259,12 +259,12 @@ function updateAIAnalysis(pwd, result, score) {
     </div>
 
     <div class="ai-section">
-      <div class="ai-section-title">⚔️ Likely Attack Vectors</div>
+      <div class="ai-section-title"> Likely Attack Vectors</div>
       <p>${vectors.map(v => `<span class="attack-tag">${v}</span>`).join('')}</p>
     </div>
 
     <div class="ai-section">
-      <div class="ai-section-title">🤖 AI Recommendation</div>
+      <div class="ai-section-title">AI Recommendation</div>
       <p>${getRecommendation(score, pwd, entropy, charTypes)}</p>
     </div>
   `;
