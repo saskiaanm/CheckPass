@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CheckPass – AI Strength Checker</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/zxcvbn/4.4.2/zxcvbn.js"></script>
+</head>
+<body>
+  <div class="bg-orbs">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo">🌸</div>
+      <div>
+        <h1>CheckPass</h1>
+        <p class="subtitle">✨ AI-Powered Password Strength Analyzer</p>
+      </div>
+    </div>
+
+    <!-- Input Card -->
+    <div class="card input-card">
+      <label class="input-label">Enter your password</label>
+      <div class="input-wrapper">
+        <input type="password" id="passwordInput" placeholder="Type your password..." autocomplete="off" spellcheck="false"/>
+        <button class="toggle-btn" id="toggleBtn" title="Show/Hide">
+          <span id="eyeIcon">(⊙_⊙)</span>
+        </button>
+      </div>
+
+      <!-- Strength Bar -->
+      <div class="strength-bar-container">
+        <div class="strength-segments">
+          <div class="segment" id="seg0"></div>
+          <div class="segment" id="seg1"></div>
+          <div class="segment" id="seg2"></div>
+          <div class="segment" id="seg3"></div>
+        </div>
+        <div class="strength-label-row">
+          <span id="strengthLabel" class="strength-label">Start typing...</span>
+          <span id="crackTime" class="crack-time"></span>
+        </div>
+      </div>
+
+      <!-- Score Ring -->
+      <div class="score-ring-wrapper">
+        <svg class="score-ring" width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="#fce7f3" stroke-width="10"/>
+          <circle id="ringProgress" cx="60" cy="60" r="50" fill="none"
+            stroke="url(#ringGrad)" stroke-width="10"
+            stroke-linecap="round"
+            stroke-dasharray="314.16" stroke-dashoffset="314.16"
+            transform="rotate(-90 60 60)"/>
+          <defs>
+            <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#F9A8D4"/>
+              <stop offset="100%" stop-color="#F472B6"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="score-center">
+          <span id="scoreNumber" class="score-number">0</span>
+          <span class="score-max">/4</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-chip" id="statLength"><span class="stat-icon">── .✦</span><span>Length: <b id="lenVal">0</b></span></div>
+      <div class="stat-chip" id="statUpper"><span class="stat-icon">🢁</span><span>Uppercase</span></div>
+      <div class="stat-chip" id="statLower"><span class="stat-icon">🡻</span><span>Lowercase</span></div>
+      <div class="stat-chip" id="statNumber"><span class="stat-icon">₅⁵₅</span><span>Numbers</span></div>
+      <div class="stat-chip" id="statSymbol"><span class="stat-icon">𓆩❤︎𓆪</span><span>Symbols</span></div>
+      <div class="stat-chip" id="statEntropy"><span class="stat-icon">⚄</span><span>Entropy: <b id="entropyVal">0</b> bits</span></div>
+    </div>
+
+    <!-- Two Columns -->
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title">ᯓ★ AI Suggestions</div>
+        <ul class="suggestions-list" id="suggestionsList">
+          <li class="suggestion-item muted">Start typing to get AI-powered suggestions...</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">⚠ Vulnerabilities Detected</div>
+        <ul class="warnings-list" id="warningsList">
+          <li class="warning-item muted">No vulnerabilities detected yet.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- AI Analysis Panel -->
+    <div class="card ai-panel">
+      <div class="card-title">AI Analysis <span class="ai-badge">✨ AI</span></div>
+      <div class="ai-content" id="aiContent">
+        <p class="muted">Enter a password to get a detailed AI analysis of its security profile, common attack vectors, and personalized recommendations.</p>
+      </div>
+    </div>
+
+    <!-- Password Generator -->
+    <div class="card generator-card">
+      <div class="card-title">♻ Strong Password Generator</div>
+      <div class="generator-controls">
+        <div class="slider-row">
+          <label>Length: <b id="genLenLabel">16</b></label>
+          <input type="range" id="genLength" min="8" max="32" value="16" />
+        </div>
+        <div class="checkbox-row">
+          <label><input type="checkbox" id="genUpper" checked /> Uppercase (A-Z)</label>
+          <label><input type="checkbox" id="genLower" checked /> Lowercase (a-z)</label>
+          <label><input type="checkbox" id="genNum" checked /> Numbers (0-9)</label>
+          <label><input type="checkbox" id="genSym" checked /> Symbols (!@#$)</label>
+        </div>
+      </div>
+      <div class="generated-wrapper">
+        <code id="generatedPassword" class="generated-password">Click "Generate" to create a strong password</code>
+        <div class="gen-buttons">
+          <button class="btn btn-primary" id="generateBtn">⚡ Generate</button>
+          <button class="btn btn-outline" id="copyBtn">📋 Copy</button>
+          <button class="btn btn-ghost" id="useBtn">↑ Use This</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">🌸 CheckPass &copy; 2026 — Group 5 ♡</div>
+  </div>
+
+  <div class="toast" id="toast">✅ Copied to clipboard!</div>
+  <script src="app.js"></script>
+</body>
+</html>
