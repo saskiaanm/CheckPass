@@ -18,8 +18,10 @@ const genLength         = document.getElementById('genLength');
 const genLenLabel       = document.getElementById('genLenLabel');
 const toast             = document.getElementById('toast');
 
+// Ring circumference: 2 * PI * r(50) = 314.16
 const CIRCUMFERENCE = 314.16;
 
+// Strength score metadata
 const SCORE_META = [
   { label: 'Very Weak', color: '#FF6B6B', risk: 'Critical',  attack: 'Instant crack' },
   { label: 'Weak',      color: '#FF9F43', risk: 'High',      attack: 'Seconds to minutes' },
@@ -28,6 +30,7 @@ const SCORE_META = [
   { label: 'Strong',    color: '#6BCB77', risk: 'Minimal',   attack: 'Centuries+' },
 ];
 
+// ── Toggle show/hide password ─────────────────────────────────
 toggleBtn.addEventListener('click', () => {
   const isHidden = passwordInput.type === 'password';
   passwordInput.type = isHidden ? 'text' : 'password';
@@ -35,12 +38,14 @@ toggleBtn.addEventListener('click', () => {
   passwordInput.focus();
 });
 
+// ── Real-time input handler ───────────────────────────────────
 passwordInput.addEventListener('input', () => {
   const pwd = passwordInput.value;
   if (!pwd) { resetUI(); return; }
   analyzePassword(pwd);
 });
 
+// ── Core Analyzer ─────────────────────────────────────────────
 function analyzePassword(pwd) {
   const result = zxcvbn(pwd);
   const score  = result.score; // 0–4
@@ -53,9 +58,11 @@ function analyzePassword(pwd) {
   updateAIAnalysis(pwd, result, score);
 }
 
+// ── Strength Bar ──────────────────────────────────────────────
 function updateStrengthBar(score, pwd, result) {
   const meta = SCORE_META[score];
 
+  // Light up correct number of segments
   const litCount = score === 0 ? 1 : score + 1;
   for (let i = 0; i < 4; i++) {
     const seg = document.getElementById(`seg${i}`);
@@ -77,6 +84,7 @@ function updateStrengthBar(score, pwd, result) {
   crackTime.textContent = `⏱ Crack time: ${ct}`;
 }
 
+// ── Ring Progress ─────────────────────────────────────────────
 function updateRing(score) {
   const fraction = score / 4;
   const offset   = CIRCUMFERENCE * (1 - fraction);
@@ -84,6 +92,7 @@ function updateRing(score) {
   scoreNumber.textContent = score;
 }
 
+// ── Stats Chips ───────────────────────────────────────────────
 function updateStats(pwd) {
   lenVal.textContent     = pwd.length;
   entropyVal.textContent = calcEntropy(pwd).toFixed(1);
@@ -100,6 +109,7 @@ function setChip(id, active) {
   document.getElementById(id).classList.toggle('active', active);
 }
 
+// Calculates Shannon-style password entropy
 function calcEntropy(pwd) {
   let pool = 0;
   if (/[a-z]/.test(pwd))        pool += 26;
@@ -109,6 +119,7 @@ function calcEntropy(pwd) {
   return pool > 0 ? pwd.length * Math.log2(pool) : 0;
 }
 
+// ── AI Suggestions ────────────────────────────────────────────
 function updateSuggestions(pwd, result) {
   const tips = [];
 
@@ -130,24 +141,27 @@ function updateSuggestions(pwd, result) {
   if (!/[^a-zA-Z0-9]/.test(pwd))
     tips.push('Add symbols like !@#$%^&* for maximum entropy.');
 
+  // zxcvbn native suggestions
   if (result.feedback.suggestions.length) {
-    result.feedback.suggestions.forEach(s => tips.push(` ${s}`));
+    result.feedback.suggestions.forEach(s => tips.push(`💡 ${s}`));
   }
 
+  // Passphrase suggestion for short weak passwords
   if (pwd.length < 10 && result.score <= 1)
     tips.push('Try a passphrase: 4 random words + numbers, e.g. "Horse!Sun7Tree#Moon"');
 
   if (tips.length === 0)
-    tips.push('No improvements needed — your password looks great!');
+    tips.push(' No improvements needed — your password looks great!');
 
   renderList(suggestionsList, tips, 'suggestion-item');
 }
 
+// ── Vulnerabilities ───────────────────────────────────────────
 function updateWarnings(pwd, result) {
   const warns = [];
 
   if (result.feedback.warning)
-    warns.push(`${result.feedback.warning}`);
+    warns.push(` ${result.feedback.warning}`);
 
   if (/^[a-z]+$/.test(pwd))
     warns.push('All lowercase — easily cracked by brute-force in seconds.');
@@ -185,6 +199,7 @@ function isKeyboardPattern(pwd) {
   return patterns.some(p => lower.includes(p));
 }
 
+// ── AI Analysis Panel ─────────────────────────────────────────
 function updateAIAnalysis(pwd, result, score) {
   const entropy   = calcEntropy(pwd);
   const hasUpper  = /[A-Z]/.test(pwd);
@@ -195,10 +210,13 @@ function updateAIAnalysis(pwd, result, score) {
   const meta      = SCORE_META[score];
   const meterPct  = (score / 4) * 100;
 
+  // Attack vectors
   const vectors = getAttackVectors(score);
 
+  // Character diversity rating
   const diversityText = ['None','Very Low','Low','Moderate','High'][charTypes] || 'Unknown';
 
+  // Entropy rating
   const entropyRating =
     entropy < 28  ? { text: 'Critically Low',  color: '#FF6B6B' } :
     entropy < 40  ? { text: 'Low',              color: '#FF9F43' } :
@@ -265,9 +283,10 @@ function getRecommendation(score, pwd, entropy, charTypes) {
     return '<strong>Moderate security.</strong> Resistant to basic attacks but could be cracked with dedicated GPU hardware in days. Mix all 4 character types and aim for 14+ characters.';
   if (score === 1)
     return '<strong>Weak password.</strong> Vulnerable to dictionary and rule-based attacks. Try a passphrase strategy: combine 4 random words with numbers and symbols, like <em>"Purple!Rain9Desk#Lamp"</em>.';
-  return 'strong>Change this immediately.</strong> This password would be cracked in milliseconds. Use the generator below to create a cryptographically secure replacement right now 💕';
+  return '<strong>Change this immediately.</strong> This password would be cracked in milliseconds. Use the generator below to create a cryptographically secure replacement right now 💕';
 }
 
+// ── Render list helper ────────────────────────────────────────
 function renderList(el, items, cls) {
   el.innerHTML = '';
   items.forEach((item, i) => {
@@ -279,6 +298,7 @@ function renderList(el, items, cls) {
   });
 }
 
+// ── Reset UI ──────────────────────────────────────────────────
 function resetUI() {
   for (let i = 0; i < 4; i++) {
     const seg = document.getElementById(`seg${i}`);
@@ -302,6 +322,7 @@ function resetUI() {
   aiContent.innerHTML       = '<p class="muted">Enter a password to get a detailed AI analysis of its security profile, common attack vectors, and personalized recommendations.</p>';
 }
 
+// ── Password Generator ────────────────────────────────────────
 genLength.addEventListener('input', () => {
   genLenLabel.textContent = genLength.value;
 });
@@ -333,6 +354,7 @@ function generateStrongPassword() {
     return;
   }
 
+  // Build password ensuring required chars are included
   let password = [...required];
   for (let i = password.length; i < len; i++) {
     password.push(secureRandFrom(charset));
@@ -342,18 +364,21 @@ function generateStrongPassword() {
   generatedPassword.textContent = password;
   generatedPassword.style.color = '#3ECFCF';
 
+  // Subtle flash animation
   generatedPassword.animate(
     [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'translateY(0)' }],
     { duration: 300, easing: 'ease-out' }
   );
 }
 
+// Cryptographically secure random character picker
 function secureRandFrom(str) {
   const arr = new Uint32Array(1);
   window.crypto.getRandomValues(arr);
   return str[arr[0] % str.length];
 }
 
+// Fisher-Yates shuffle using crypto random
 function secureShuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -365,11 +390,12 @@ function secureShuffle(arr) {
   return a;
 }
 
+// ── Copy to Clipboard ─────────────────────────────────────────
 copyBtn.addEventListener('click', () => {
   const pwd = generatedPassword.textContent;
   if (!pwd || pwd.startsWith('Click')) return;
   navigator.clipboard.writeText(pwd).then(showToast).catch(() => {
-    
+    // Fallback for older browsers
     const ta = document.createElement('textarea');
     ta.value = pwd;
     document.body.appendChild(ta);
@@ -380,6 +406,7 @@ copyBtn.addEventListener('click', () => {
   });
 });
 
+// ── Use Generated Password ────────────────────────────────────
 useBtn.addEventListener('click', () => {
   const pwd = generatedPassword.textContent;
   if (!pwd || pwd.startsWith('Click')) return;
@@ -387,20 +414,23 @@ useBtn.addEventListener('click', () => {
   analyzePassword(pwd);
   passwordInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
   passwordInput.focus();
-
+  // Pulse effect on input
   passwordInput.animate(
     [{ boxShadow: '0 0 0 0 rgba(108,99,255,0.5)' }, { boxShadow: '0 0 0 10px rgba(108,99,255,0)' }],
     { duration: 500, easing: 'ease-out' }
   );
 });
 
+// ── Toast Notification ────────────────────────────────────────
 function showToast() {
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), 2600);
 }
 
+// ── Init ──────────────────────────────────────────────────────
 resetUI();
 
+// Auto-generate a sample password on load (for demo feel)
 setTimeout(() => {
   generateStrongPassword();
 }, 400);
