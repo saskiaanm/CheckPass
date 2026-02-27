@@ -39,7 +39,7 @@ passwordInput.addEventListener('input', () => {
 });
 function analyzePassword(pwd) {
   const result = zxcvbn(pwd);
-  const score  = result.score; // 0–4
+  const score  = result.score;
 
   updateStrengthBar(score, pwd, result);
   updateRing(score);
@@ -121,7 +121,7 @@ function updateSuggestions(pwd, result) {
   if (!/[^a-zA-Z0-9]/.test(pwd))
     tips.push('Add symbols like !@#$%^&* for maximum entropy.');
   if (result.feedback.suggestions.length) {
-    result.feedback.suggestions.forEach(s => tips.push(`💡 ${s}`));
+    result.feedback.suggestions.forEach(s => tips.push(`${s}`));
   }
   if (pwd.length < 10 && result.score <= 1)
     tips.push('Try a passphrase: 4 random words + numbers, e.g. "Horse!Sun7Tree#Moon"');
